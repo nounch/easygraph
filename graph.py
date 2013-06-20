@@ -2,11 +2,12 @@ import pydot
 
 
 class Graph(object):
-    def __init__(self, structure, styles={'rankdir': 'LR', 'splines':
-                                              'curves'}):
+    def __init__(self, structure={}, styles={'rankdir': 'LR', 'splines':
+                                                 'curves'}, layout='dot'):
         self.structure = structure
         self.graph = pydot.Dot(graph_type='graph', rankdir='LR',
                                splines='polyline')
+        self.graph.set_prog(layout)
 
         for attr in styles.keys():
             self.graph.set(attr, styles[attr])
@@ -34,9 +35,8 @@ class Graph(object):
                                            label=key))
 
         for key in self.structure.keys():
-            if structure[key] != None:
-                for edge in structure[key]:
-                    print(edge)  # DEBUG
+            if self.structure[key] != None:
+                for edge in self.structure[key]:
 
                     # Set node-specific styles
                     # (only if there are style attributes speicified)
@@ -45,9 +45,21 @@ class Graph(object):
                             self.graph.get_node(key.replace(' ', '')).set(
                                 attr, edge[attr])
                     elif type(edge) == list:
+
+                        node = self.graph.get_node(edge[1])
+
+                        if type(node) == list and len(node) == 0:
+                            node = pydot.Node(edge[1].replace(' ', ''),
+                                              style='filled',
+                                              fillcolor='#C1C1C1',
+                                              shape='rectangle',
+                                              label=edge[1])
+                            self.graph.add_node(node)
+
                         new_edge = pydot.Edge(
                             self.graph.get_node(key.replace(' ', '')),
-                            self.graph.get_node(edge[1]),
+                            # self.graph.get_node(edge[1]),
+                            node,
                             label=edge[2],
                             arrowhead=self._arrow_head(edge[0]),
                             dir='forward')
@@ -56,7 +68,6 @@ class Graph(object):
                         # (only if there are style attributes speicified)
                         try:
                             for attr in edge[3].keys():
-                                print('ATTR: %s' % new_edge)  # DEBUG
                                 # For some reason `Edge.set' does not work
                                 # new_edge.set(attr, edge[3][attr])
                                 # So this `hack' is required
@@ -68,11 +79,8 @@ class Graph(object):
                         self.graph.add_edge(new_edge)
 
                     nodes = self.graph.get_nodes()
-                    for node in nodes:
-                        print(node.get_name())  # DEBUG
 
-
-        self.graph.write_png('output.png')
+        self.graph.write('output.png', format='png')
 
     def _arrow_head(self, symbol='->'):
         sym = self._arrow_symbols['->']
@@ -91,6 +99,9 @@ if __name__ == '__main__':
                 'color': '#00FF00',
                 'style': 'filled',
                 'fillcolor': '#0000FF',
+                },
+            {
+                'fillcolor': '#ABCDEF',
                 },
             ['->', duck, 'eats'],
             ['--', duck, 'live in the same area', {
@@ -167,5 +178,70 @@ if __name__ == '__main__':
         'splines': 'polyline',
         'rankdir': 'LR',
         }
-    graph = Graph(structure, styles)
-    graph.draw()
+
+
+    sun = 'Sun'
+    moon = 'Moon'
+    earth = 'Earth'
+    observer = 'External observer'
+    threat_edge_style = {
+        'color': '#FF0000',
+        'fontcolor': '#FF0000',
+        'label': 'does threaten',
+        }
+    test_structure = {
+        sun: [
+            ['->', earth, 'shines on'],
+            ['->', moon, 'shines on'],
+            {
+                'style': 'filled',
+                'fillcolor': '#FFFF00',
+                }],
+        moon: [
+            ['->', earth, 'reflects on'],
+            ['->', sun, 'reflects on'],
+            {
+                'style': 'filled',
+                'fillcolor': '#C1C1C1',
+                }],
+        earth: [
+            ['->', sun, 'coexists', {'dir': 'both'}],
+            ['->', moon, 'coexists', {'dir': 'both'}],
+            ['->', earth, 'threatens', threat_edge_style],
+            ['->', sun, 'threatens', threat_edge_style],
+            ['->', moon, 'threatens', threat_edge_style],
+            ['->', 'satellite', 'observes\\n/analyzes', {'dir': 'back'}],
+            {
+                'style': 'filled',
+                'fillcolor': '#AEFFAE',
+                }],
+        observer: [
+            ['->', sun, 'observers'],
+            ['->', moon, 'observers'],
+            ['->', earth, 'observers'],
+            ['->', 'something', 'does something', {
+                    'fontcolor': '#FF00FF',
+                    'color': '#FF00FF',
+                    }],
+            {
+                'shape': 'ellipse',
+                },
+            ],
+        }
+# '': [
+#     ['->', '', ''],
+#     ['->', '', ''],
+#     {
+#         '': '',
+#         '': '',
+#         }
+#     ],
+
+    test_styles = {
+        'splines': 'polyline',
+        'rankdir': 'TD',
+        }
+
+graph = Graph(test_structure, test_styles)
+
+graph.draw()
