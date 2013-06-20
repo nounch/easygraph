@@ -40,6 +40,92 @@ class Graph(object):
             '<<>>': 'vee',
             '>o-o<': 'invdot',
             }
+        # Only some unequal `arrowhead'/`arrowtail' combinations are
+        # supported. All combinations of a filled `arrowtail' and a filled
+        # `dot' `arrowhead' are available, though, since they may appear
+        # more frequently than other combinations.
+        # `Graph._double_arrow_unequal_symbols' can be extended at will,
+        # though by adding a dictionary entry which has the following
+        # structure:
+        #
+        #   '<symbol>': {
+        #       'arrowtail': '<arrowhead descriptor>',
+        #       'arrowhead': '<arrowtail descriptor>',
+        #       },
+        self._double_arrow_unequal_symbols = {
+            'o->': {
+                'arrowtail': 'dot',
+                'arrowhead': 'normal',
+                },
+            '<-o': {
+                'arrowtail': 'normal',
+                'arrowhead': 'dot',
+                },
+
+            '<-[]': {
+                'arrowtail': 'normal',
+                'arrowhead': 'box',
+                },
+            '[]->': {
+                'arrowtail': 'box',
+                'arrowhead': 'normal',
+                },
+
+            '<-<>': {
+                'arrowtail': 'normal',
+                'arrowhead': 'diamond',
+                },
+            '<>->': {
+                'arrowtail': 'diamond',
+                'arrowhead': 'normal',
+                },
+
+            '>>->': {
+                'arrowtail': 'vee',
+                'arrowhead': 'normal',
+                },
+            '<->>': {
+                'arrowtail': 'normal',
+                'arrowhead': 'vee',
+                },
+
+            '>o->': {
+                'arrowtail': 'invdot',
+                'arrowhead': 'normal',
+                },
+            '<-o<': {
+                'arrowtail': 'normal',
+                'arrowhead': 'invdot',
+                },
+
+            '|->': {
+                'arrowtail': 'tee',
+                'arrowhead': 'normal',
+                },
+            '<-|': {
+                'arrowtail': 'normal',
+                'arrowhead': 'tee',
+                },
+
+            '/->': {
+                'arrowtail': 'halfopen',
+                'arrowhead': 'normal',
+                },
+            '<-\\': {
+                'arrowtail': 'normal',
+                'arrowhead': 'halfopen',
+                },
+
+            '>->': {
+                'arrowtail': 'crow',
+                'arrowhead': 'normal',
+                },
+            '<-<': {
+                'arrowtail': 'normal',
+                'arrowhead': 'crow',
+                },
+
+            }
 
     def draw(self):
         for key in self.structure.keys():
@@ -136,6 +222,11 @@ class Graph(object):
             edge.__getattribute__('set_arrowtail')(
                 self._double_arrow_symbols[symbol])
             edge.__getattribute__('set_dir')('both')
+        elif symbol in self._double_arrow_unequal_symbols:
+            for attr in self._double_arrow_unequal_symbols[symbol].keys():
+                edge.__getattribute__('set_dir')('both')
+                edge.__getattribute__('set_' + attr)(
+                    self._double_arrow_unequal_symbols[symbol][attr])
         else:
             # In theory, this should work:
             #
@@ -287,6 +378,8 @@ if __name__ == '__main__':
                 'fillcolor': '#AEFFAE',
                 }],
         observer: [
+            ['o->', 'barfoo', 'barfoos'],
+            ['<-o', 'barfoo2', 'barfoos'],
             ['->', sun, 'observers'],
             ['->', moon, 'observers'],
             ['->', earth, 'observers'],
