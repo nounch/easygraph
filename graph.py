@@ -9,6 +9,8 @@ class Graph(object):
                                splines='polyline')
         self.graph.set_prog(layout)
 
+        self._BOTH_ARROW_HEAD = '<->';
+
         for attr in styles.keys():
             self.graph.set(attr, styles[attr])
 
@@ -17,12 +19,26 @@ class Graph(object):
             '--': 'none',
             '-[]': 'box',
             '-<': 'crow',
-            '-)': 'curve',
+            '-\\': 'halfopen',
             '-<>': 'diamond',
             '-o': 'dot',
             '-<<': 'inv',
             '-|': 'tee',
             '>>': 'vee',
+            '-o<': 'invdot',
+            }
+        self._double_arrow_symbols = {
+            '<->': 'normal',
+            '--': 'none',
+            '[]-[]': 'box',
+            '>-<': 'crow',
+            '/-\\': 'halfopen',
+            '<>-<>': 'diamond',
+            'o-o': 'dot',
+            '>>-<<': 'inv',
+            '|-|': 'tee',
+            '<<>>': 'vee',
+            '>o-o<': 'invdot',
             }
 
     def draw(self):
@@ -61,8 +77,14 @@ class Graph(object):
                             # self.graph.get_node(edge[1]),
                             node,
                             label=edge[2],
-                            arrowhead=self._arrow_head(edge[0]),
-                            dir='forward')
+                            # arrowhead=self._arrow_head(edge[0]),
+                            # arrowhead='->',
+                            # dir='forward'
+
+                            # arrowhead='normal',
+                            # dir='forward'
+                            )
+                        self._dispatch_arrow_head(new_edge, edge[0]);
 
                         # Set edge-specific styles
                         # (only if there are style attributes speicified)
@@ -82,13 +104,47 @@ class Graph(object):
 
         self.graph.write('output.png', format='png')
 
-    def _arrow_head(self, symbol='->'):
-        sym = self._arrow_symbols['->']
+    # def _arrow_head(self, symbol='->'):
+    #     sym = self._arrow_symbols['->']
+    #     if symbol in self._arrow_symbols:
+    #         sym = self._arrow_symbols[symbol]
+
+    #     return sym
+
+    def _dispatch_arrow_head(self, edge, symbol):
         if symbol in self._arrow_symbols:
-            sym = self._arrow_symbols[symbol]
+            # In theory, this should work:
+            #
+            # edge.set('arrowhead', self._arrow_symbols[symbol])
+            # edge.set('dir', 'forward')
+            #
+            # In reality, it does not. So this `hack' is required:
+            edge.__getattribute__('set_arrowhead')(
+                self._arrow_symbols[symbol])
+            edge.__getattribute__('set_dir')('forward')
 
-        return sym
-
+        elif symbol in self._double_arrow_symbols:
+            # In theory, this should work:
+            #
+            # edge.set('arrowhead', self._double_arrow_symbols[symbol])
+            # edge.set('arrowtail', self._double_arrow_symbols[symbol])
+            # edge.set('dir', 'both')
+            #
+            # In reality, it does not. So this `hack' is required:
+            edge.__getattribute__('set_arrowhead')(
+                self._double_arrow_symbols[symbol])
+            edge.__getattribute__('set_arrowtail')(
+                self._double_arrow_symbols[symbol])
+            edge.__getattribute__('set_dir')('both')
+        else:
+            # In theory, this should work:
+            #
+            # edge.set('arrowhead', 'normal')
+            # edge.set('dir', 'forward')
+            #
+            # In reality, it does not. So this `hack' is required:
+            edge.__getattribute__('set_arrowhead')('normal')
+            edge.__getattribute__('set_dir')('forward')
 
 
 if __name__ == '__main__':
@@ -205,12 +261,27 @@ if __name__ == '__main__':
                 'fillcolor': '#C1C1C1',
                 }],
         earth: [
-            ['->', sun, 'coexists', {'dir': 'both'}],
+            ['->', sun, 'coexists', {
+                    'arrowhead': 'dot',
+                    'arrowtail': 'dot',
+                    'dir': 'both',
+                    }],
             ['->', moon, 'coexists', {'dir': 'both'}],
             ['->', earth, 'threatens', threat_edge_style],
             ['->', sun, 'threatens', threat_edge_style],
             ['->', moon, 'threatens', threat_edge_style],
             ['->', 'satellite', 'observes\\n/analyzes', {'dir': 'back'}],
+            ['o-o', 'one', 'foo'],
+            ['/-\\', 'one', 'foo'],
+            ['>>-<<', 'one', 'foo'],
+            ['|-|', 'one', 'foo'],
+            ['<<>>', 'one', 'foo'],
+            ['>o-o<', 'one', 'foo'],
+            ['<>-<>', 'nonsense', 'does nothing', {
+                    'style': 'filled',
+                    'color': '#FFAEFF',
+                    'fontcolor': '#FFAEFF',
+                    }],
             {
                 'style': 'filled',
                 'fillcolor': '#AEFFAE',
@@ -239,7 +310,7 @@ if __name__ == '__main__':
 
     test_styles = {
         'splines': 'polyline',
-        'rankdir': 'TD',
+        'rankdir': 'LR',
         }
 
 graph = Graph(test_structure, test_styles)
