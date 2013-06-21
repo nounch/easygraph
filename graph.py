@@ -4,6 +4,7 @@ import pydot
 class Graph(object):
     def __init__(self, structure={}, styles={'rankdir': 'LR', 'splines':
                                                  'curves'}, layout='dot'):
+        # def __init__(self, structure, styles, layout='dot'):
         self.structure = structure
         self.graph = pydot.Dot(graph_type='graph', rankdir='LR',
                                splines='polyline')
@@ -13,6 +14,34 @@ class Graph(object):
 
         for attr in styles.keys():
             self.graph.set(attr, styles[attr])
+
+        self._arrow_symbols_left = {
+            '<-': 'normal',
+            '-': 'none',
+            '[]-': 'box',
+            '>-': 'crow',
+            '\\-': 'halfopen',
+            '<>-': 'diamond',
+            'o-': 'dot',
+            '>>-': 'inv',
+            '|-': 'tee',
+            '<<-': 'vee',
+            'o<-': 'invdot',
+            }
+
+        self._arrow_symbols_right = {
+            '->': 'normal',
+            '-': 'none',
+            '-[]': 'box',
+            '-<': 'crow',
+            '-\\': 'halfopen',
+            '-<>': 'diamond',
+            '-o': 'dot',
+            '-<<': 'inv',
+            '-|': 'tee',
+            '->>': 'vee',
+            '->o': 'invdot',
+            }
 
         self._arrow_symbols = {
             '->': 'normal',
@@ -24,6 +53,7 @@ class Graph(object):
             '-o': 'dot',
             '-<<': 'inv',
             '-|': 'tee',
+            '->>': 'vee',
             '>>': 'vee',
             '-o<': 'invdot',
             }
@@ -37,94 +67,9 @@ class Graph(object):
             'o-o': 'dot',
             '>>-<<': 'inv',
             '|-|': 'tee',
+            '<<->>': 'vee',
             '<<>>': 'vee',
             '>o-o<': 'invdot',
-            }
-        # Only some unequal `arrowhead'/`arrowtail' combinations are
-        # supported. All combinations of a filled `arrowtail' and a filled
-        # `dot' `arrowhead' are available, though, since they may appear
-        # more frequently than other combinations.
-        # `Graph._double_arrow_unequal_symbols' can be extended at will,
-        # though by adding a dictionary entry which has the following
-        # structure:
-        #
-        #   '<symbol>': {
-        #       'arrowtail': '<arrowhead descriptor>',
-        #       'arrowhead': '<arrowtail descriptor>',
-        #       },
-        self._double_arrow_unequal_symbols = {
-            'o->': {
-                'arrowtail': 'dot',
-                'arrowhead': 'normal',
-                },
-            '<-o': {
-                'arrowtail': 'normal',
-                'arrowhead': 'dot',
-                },
-
-            '<-[]': {
-                'arrowtail': 'normal',
-                'arrowhead': 'box',
-                },
-            '[]->': {
-                'arrowtail': 'box',
-                'arrowhead': 'normal',
-                },
-
-            '<-<>': {
-                'arrowtail': 'normal',
-                'arrowhead': 'diamond',
-                },
-            '<>->': {
-                'arrowtail': 'diamond',
-                'arrowhead': 'normal',
-                },
-
-            '>>->': {
-                'arrowtail': 'vee',
-                'arrowhead': 'normal',
-                },
-            '<->>': {
-                'arrowtail': 'normal',
-                'arrowhead': 'vee',
-                },
-
-            '>o->': {
-                'arrowtail': 'invdot',
-                'arrowhead': 'normal',
-                },
-            '<-o<': {
-                'arrowtail': 'normal',
-                'arrowhead': 'invdot',
-                },
-
-            '|->': {
-                'arrowtail': 'tee',
-                'arrowhead': 'normal',
-                },
-            '<-|': {
-                'arrowtail': 'normal',
-                'arrowhead': 'tee',
-                },
-
-            '/->': {
-                'arrowtail': 'halfopen',
-                'arrowhead': 'normal',
-                },
-            '<-\\': {
-                'arrowtail': 'normal',
-                'arrowhead': 'halfopen',
-                },
-
-            '>->': {
-                'arrowtail': 'crow',
-                'arrowhead': 'normal',
-                },
-            '<-<': {
-                'arrowtail': 'normal',
-                'arrowhead': 'crow',
-                },
-
             }
 
     def draw(self):
@@ -222,190 +167,23 @@ class Graph(object):
             edge.__getattribute__('set_arrowtail')(
                 self._double_arrow_symbols[symbol])
             edge.__getattribute__('set_dir')('both')
-        elif symbol in self._double_arrow_unequal_symbols:
-            for attr in self._double_arrow_unequal_symbols[symbol].keys():
-                edge.__getattribute__('set_dir')('both')
-                edge.__getattribute__('set_' + attr)(
-                    self._double_arrow_unequal_symbols[symbol][attr])
         else:
-            # In theory, this should work:
-            #
-            # edge.set('arrowhead', 'normal')
-            # edge.set('dir', 'forward')
-            #
-            # In reality, it does not. So this `hack' is required:
-            edge.__getattribute__('set_arrowhead')('normal')
-            edge.__getattribute__('set_dir')('forward')
-
-
-if __name__ == '__main__':
-    duck = 'Dagobert_Duck';
-    structure = {
-        'tiger': [
-            {
-                'color': '#00FF00',
-                'style': 'filled',
-                'fillcolor': '#0000FF',
-                },
-            {
-                'fillcolor': '#ABCDEF',
-                },
-            ['->', duck, 'eats'],
-            ['--', duck, 'live in the same area', {
-                    'color': '#FF0000',
-                    }],
-            ],
-        duck: [
-            {
-                'shape': 'triangle',
-                'style': 'filled',
-                'fillcolor': '#FFFF00',
-                },
-            ['->', 'plancton', 'eats', {
-                    'style': 'dotted',
-                    'labelfontcolor': '#FFFF00',
-                    'fontsize': '10.0',
-                    }],
-            ['->', 'human', 'recognizes'],
-            ],
-        'snail': [],
-        'human': [
-            ['->', 'tiger', 'studies'],
-            ['--', duck, 'see each other frequently'],
-            ['->', 'snail', 'bar', {
-                    'color': '#FF0000',
-                    'style': 'dashed',
-                    'fontsize': '20.0',
-                    'fontcolor': '#0000FF',
-                    }],
-            {
-                'shape': 'circle',
-                'style': 'filled',
-                'fillcolor': '#FF0000',
-                },
-            ],
-        'plancton': None,
-        'wind': [
-            ['--', 'human' , 'affects'],
-            ['--', duck , 'affects'],
-            ['--', 'tiger' , 'affects'],
-            ],
-        'sun': [
-            ['--', 'human' , 'affects'],
-            ['--', duck , 'affects'],
-            ['--', 'tiger' , 'affects'],
-            ['--', 'plancton' , 'affects'],
-            ],
-        'water': [
-            ['--', duck , 'affects'],
-            ['--', 'plancton' , 'affects'],
-            ],
-        'foo': [
-            ['--', duck , 'affects', {
-                    'color': '#00FF00',
-                    'arrowhead': 'box',
-                    }],
-            ['--', 'plancton' , 'affects'],
-            ],
-        'Mighty One': [
-            ['--', duck , 'influences'],
-            ['->', duck , 'influences'],
-            ['-[]', duck , 'influences'],
-            ['-o', duck , 'influences'],
-            ['-)', duck , 'influences'],
-            ['>>', duck , 'influences'],
-            ['-<', duck , 'influences'],
-            ['-<<', duck , 'influences'],
-            ['-|', duck , 'influences'],
-            ['-<>', duck , 'influences'],
-            ],
-        }
-
-    styles = {
-        'splines': 'polyline',
-        'rankdir': 'LR',
-        }
-
-
-    sun = 'Sun'
-    moon = 'Moon'
-    earth = 'Earth'
-    observer = 'External observer'
-    threat_edge_style = {
-        'color': '#FF0000',
-        'fontcolor': '#FF0000',
-        'label': 'does threaten',
-        }
-    test_structure = {
-        sun: [
-            ['->', earth, 'shines on'],
-            ['->', moon, 'shines on'],
-            {
-                'style': 'filled',
-                'fillcolor': '#FFFF00',
-                }],
-        moon: [
-            ['->', earth, 'reflects on'],
-            ['->', sun, 'reflects on'],
-            {
-                'style': 'filled',
-                'fillcolor': '#C1C1C1',
-                }],
-        earth: [
-            ['->', sun, 'coexists', {
-                    'arrowhead': 'dot',
-                    'arrowtail': 'dot',
-                    'dir': 'both',
-                    }],
-            ['->', moon, 'coexists', {'dir': 'both'}],
-            ['->', earth, 'threatens', threat_edge_style],
-            ['->', sun, 'threatens', threat_edge_style],
-            ['->', moon, 'threatens', threat_edge_style],
-            ['->', 'satellite', 'observes\\n/analyzes', {'dir': 'back'}],
-            ['o-o', 'one', 'foo'],
-            ['/-\\', 'one', 'foo'],
-            ['>>-<<', 'one', 'foo'],
-            ['|-|', 'one', 'foo'],
-            ['<<>>', 'one', 'foo'],
-            ['>o-o<', 'one', 'foo'],
-            ['<>-<>', 'nonsense', 'does nothing', {
-                    'style': 'filled',
-                    'color': '#FFAEFF',
-                    'fontcolor': '#FFAEFF',
-                    }],
-            {
-                'style': 'filled',
-                'fillcolor': '#AEFFAE',
-                }],
-        observer: [
-            ['o->', 'barfoo', 'barfoos'],
-            ['<-o', 'barfoo2', 'barfoos'],
-            ['->', sun, 'observers'],
-            ['->', moon, 'observers'],
-            ['->', earth, 'observers'],
-            ['->', 'something', 'does something', {
-                    'fontcolor': '#FF00FF',
-                    'color': '#FF00FF',
-                    }],
-            {
-                'shape': 'ellipse',
-                },
-            ],
-        }
-# '': [
-#     ['->', '', ''],
-#     ['->', '', ''],
-#     {
-#         '': '',
-#         '': '',
-#         }
-#     ],
-
-    test_styles = {
-        'splines': 'polyline',
-        'rankdir': 'LR',
-        }
-
-graph = Graph(test_structure, test_styles)
-
-graph.draw()
+            try:
+                syms = symbol.split('-')
+                left = syms[0] + '-'
+                right = '-' + syms[-1]
+                if left in self._arrow_symbols_left and right in self._arrow_symbols_right:
+                    edge.__getattribute__('set_arrowhead')(
+                        self._arrow_symbols_right[right])
+                    edge.__getattribute__('set_arrowtail')(
+                        self._arrow_symbols_left[left])
+                    edge.__getattribute__('set_dir')('both')
+            except Exception, e:
+                # In theory, this should work:
+                #
+                # edge.set('arrowhead', 'normal')
+                # edge.set('dir', 'forward')
+                #
+                # In reality, it does not. So this `hack' is required:
+                edge.__getattribute__('set_arrowhead')('normal')
+                edge.__getattribute__('set_dir')('forward')
