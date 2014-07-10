@@ -1,7 +1,7 @@
 import pydot
 
 
-class Graph(object):
+class EasyGraph(object):
     def __init__(self, structure={}, styles={'rankdir': 'LR', 'splines':
                                                  'curves'}, layout='dot'):
         # def __init__(self, structure, styles, layout='dot'):
@@ -134,13 +134,6 @@ class Graph(object):
                     nodes = self.graph.get_nodes()
 
         self.graph.write('output.png', format='png')
-
-    # def _arrow_head(self, symbol='->'):
-    #     sym = self._arrow_symbols['->']
-    #     if symbol in self._arrow_symbols:
-    #         sym = self._arrow_symbols[symbol]
-
-    #     return sym
 
     def _dispatch_arrow_head(self, edge, symbol):
         if symbol in self._arrow_symbols:

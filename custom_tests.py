@@ -1,7 +1,17 @@
-from graph import Graph
+from random import choice, randint
+
+from easygraph import EasyGraph
 
 
 if __name__ == '__main__':
+###########################################################################
+# Settings
+###########################################################################
+
+#==========================================================================
+# Test 1
+#==========================================================================
+
     duck = 'Dagobert_Duck';
     structure = {
         'tiger': [
@@ -90,6 +100,10 @@ if __name__ == '__main__':
         }
 
 
+#==========================================================================
+# Test 2
+#==========================================================================
+
     sun = 'Sun'
     moon = 'Moon'
     earth = 'Earth'
@@ -169,6 +183,136 @@ if __name__ == '__main__':
         'rankdir': 'LR',
         }
 
-graph = Graph(test_structure, test_styles)
 
+#==========================================================================
+# Test 3
+#==========================================================================
+# Constructs a relatively random graph.
+
+    zero = 'Zero'
+    one = 'One'
+    two = 'Two'
+    three = 'Three'
+    four = 'Four'
+    five = 'Five'
+    six = 'Six'
+    seven = 'Seven'
+    eight = 'Eight'
+    nine = 'Nine'
+
+    bases = [
+        zero,
+        one,
+        two,
+        three,
+        four,
+        five,
+        six,
+        seven,
+        eight,
+        nine,
+
+        'foo',
+        'bar',
+        'baz',
+        'foobar',
+        'barfoo',
+        'foobaz',
+        ]
+
+
+    large_structure = {}
+
+    def random_edge_type():
+        return choice([
+                'o->',
+                '<-o',
+                'o-o',
+                'o-[]',
+                '[]-o',
+                '[]-<>',
+                ])
+
+    def random_base():
+        return choice(bases)
+
+    def random_label():
+        return choice([
+                'does something',
+                'does something else',
+                'does something completely different',
+                'does nothing',
+                ])
+
+    def random_edge_style():
+        return choice([
+                {
+                    'fontcolor': '#FF0000',
+                    'color': '#FF0000',
+                    'label': 'is red',
+                    },
+                {
+                    'fontcolor': '#00FF00',
+                    'color': '#00FF00',
+                    'label': 'is green',
+                    },
+                {
+                    'fontcolor': '#0000FF',
+                    'color': '#0000FF',
+                    'label': 'is blue',
+                    },
+                ])
+
+    def random_node_style():
+        return choice([
+                {
+                    'style': 'filled',
+                    'fillcolor': '#FF7777',
+                    },
+                {
+                    'style': 'filled',
+                    'fillcolor': '#77FF77',
+                    },
+                {
+                    'style': 'filled',
+                    'fillcolor': '#7777FF',
+                    },
+                ])
+
+    def random_edge():
+        return [random_edge_type(), random_base(), random_label(),
+                random_edge_style()]
+
+    def random_structure(structure, bases):
+        struct = structure
+
+        for base in bases:
+            struct[base] = []
+
+        for key in struct:
+            for i in range(1, randint(1, 20)):
+                struct[key].append(random_edge())
+            struct[key].append(random_node_style())
+        return struct
+
+
+    # Build a random structure
+    large_structure = random_structure(large_structure, bases)
+
+
+    large_styles = {
+        'splines': 'polyline',
+        'rankdir': 'TD',
+        }
+
+
+###########################################################################
+# Run
+###########################################################################
+
+# graph = Graph(structure, styles)
+# graph = Graph(test_structure, test_styles)
+
+# graph = EasyGraph(large_structure, large_styles)
+graph = EasyGraph(test_structure, test_styles)
 graph.draw()
